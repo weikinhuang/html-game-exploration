@@ -1,5 +1,8 @@
 Classify("Game/Array", {
 	length : 0,
+	init : function() {
+		this.push.apply(this, arguments);
+	},
 	toArray : function() {
 		return Array.prototype.slice.call(this, 0);
 	},
@@ -32,6 +35,16 @@ Classify("Game/Array", {
 		var obj = new this.constructor();
 		obj.push.apply(obj, items);
 		return obj;
+	},
+	shuffle : function() {
+		var len = this.length, idx = len, ridx, temp;
+		while (idx--) {
+			ridx = parseInt(Math.random() * len);
+			temp = this[idx];
+			this[idx] = this[ridx];
+			this[ridx] = temp;
+		}
+		return this;
 	},
 	copy : function() {
 		var items = Array.prototype.splice.call(this.toArray(), 0);
@@ -77,6 +90,9 @@ Classify("Game/Array", {
 	},
 	last : function() {
 		return this[this.length - 1];
+	},
+	get : function(index) {
+		return this[index];
 	},
 	size : function() {
 		return this.length;
