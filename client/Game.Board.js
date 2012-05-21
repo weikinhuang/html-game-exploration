@@ -4,7 +4,9 @@ Classify("Game/Game.Board", "Game", {
 	cols : 8,
 	colors : 3,
 	startHeight : 8,
-	startDensity : 0.4,
+	startDensity : 0.8,
+	startMaxPerRow : 2,
+	dropRate : 500, // number of ms to move one board position
 	colors : Classify("Game").Array("Red", "Green", "Blue"),
 	__static_ : {
 		instance : null
@@ -29,14 +31,6 @@ Classify("Game/Game.Board", "Game", {
 		this.drawPlayer();
 		this.drawCascade();
 		this.drawAttacks();
-		// this.move();
-		// this.clear();
-		// this.ball.fillStyle = 'rgb(0, 0, 0)';
-		// this.ball.arc(this.x, this.y, this.r, 0, Math.PI * 2, true);
-		// this.ball.arc(this.x, this.y, this.r, 0, Math.PI * 2, true);
-		// this.ball.closePath();
-		// this.ball.fill();
-		// this.ball.save();
 	},
 	drawSetPieces : function() {
 		this.board.forEach(function(piece) {
@@ -61,16 +55,57 @@ Classify("Game/Game.Board", "Game", {
 				if (Math.random() <= this.startDensity) {
 					colors = this.colors.copy().shuffle();
 					do {
-						piece = new Piece.Pill[colors.pop()](this.canvas);
+						piece = new Piece.Virus[colors.pop()](this.canvas);
 						this.board.set(i, h, piece);
-					} while (this.isMatch(i, h));
+					} while (this.isMatch(i, h, this.startMaxPerRow));
 					piece.setPosition((this.cols - i - 1) * piece.width, (this.rows - h - 1) * piece.height).draw();
 				}
 			}
 			h++;
 		}
 	},
-	isMatch : function(x, y) {
+	isMatch : function(x, y, limit) {
+		// matching
+		// OOOXOOO
+		// OOOXOOO
+		// OOOXOOO
+		// XXXXXXX
+		// OOOXOOO
+		// OOOXOOO
+		// OOOXOOO
+		// scan x
+		var minX, maxX, len = 0, x1, x2, threshold = limit - 1;
+		minX = Math.max(0, x - limit);
+		maxX = Math.min(this.cols - 1, x + limit);
+		while (minX <= maxX) {
+			x1 = this.board.get(minX, y);
+			x2 = this.board.get(minX + 1, y);
+			if (x1 && x2 && x1.color === x2.color) {
+				len++;
+			} else {
+				len = 0;
+			}
+			if (len === threshold) {
+				return true;
+			}
+			minX++;
+		}
+		// scan y
+		minY = Math.max(0, y - limit);
+		maxY = Math.min(this.rows - 1, y + limit);
+		while (minY <= maxY) {
+			x1 = this.board.get(x, minY);
+			x2 = this.board.get(x, minY + 1);
+			if (x1 && x2 && x1.color === x2.color) {
+				len++;
+			} else {
+				len = 0;
+			}
+			if (len === threshold) {
+				return true;
+			}
+			minY++;
+		}
 
 		return false;
 	}
